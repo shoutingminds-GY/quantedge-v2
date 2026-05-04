@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>QuantEdge v2</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Outfit:wght@300;400;600;700&display=swap');
+
+  :root {
+    --bg:       #080C10;
+    --surface:  #0E1418;
+    --border:   #1C2530;
+    --accent:   #00D4FF;
+    --green:    #00E676;
+    --red:      #FF3D57;
+    --yellow:   #FFB800;
+    --dim:      #4A5568;
+    --text:     #E2E8F0;
+    --mono:     'JetBrains Mono', monospace;
+    --sans:     'Outfit', sans-serif;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    padding: 12px;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 10px;
+  }
+
+  .header-left { display: flex; flex-direction: column; gap: 4px; }
+
+  .brand {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+
+  .market-row {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .nifty-price {
+    font-family: var(--mono);
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .vwap-label {
+    font-size: 11px;
+    color: var(--dim);
+    font-family: var(--mono);
+  }
+
+  .vwap-val {
+    font-size: 13px;
+    font-family: var(--mono);
+    color: var(--yellow);
+  }
+
+  .pnl-row {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-top: 2px;
+  }
+
+  .pnl-item { display: flex; flex-direction: column; gap: 1px; }
+  .pnl-label { font-size: 9px; color: var(--dim); letter-spacing: 1px; text-transform: uppercase; }
+  .pnl-val {
+    font-family: var(--mono);
+    font-size: 15px;
+    font-weight: 700;
+  }
+  .pnl-val.pos { color: var(--green); }
+  .pnl-val.neg { color: var(--red); }
+  .pnl-val.neu { color: var(--dim); }
+
+  .header-right { display: flex; flex-direction: column; gap: 8px; align-items: flex-end; }
+
+  .status-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--dim);
+    display: inline-block;
+    margin-right: 6px;
+  }
+  .status-dot.connected { background: var(--green); box-shadow: 0 0 8px var(--green); }
+  .status-dot.running   { background: var(--accent); box-shadow: 0 0 8px var(--accent);
+    animation: pulse 1.5s infinite; }
+
+  @keyframes pulse {
+    0%,100% { opacity: 1; } 50% { opacity: 0.4; }
+  }
+
+  .btn-row { display: flex; gap: 6px; }
+
+  button {
+    font-family: var(--sans);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 7px 14px;
+    border-radius: 7px;
+    border: none;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: opacity 0.15s, transform 0.1s;
+  }
+  button:active { transform: scale(0.96); }
+  button:disabled { opacity: 0.35; cursor: not-allowed; }
+
+  .btn-start { background: var(--green); color: #080C10; }
+  .btn-stop  { background: var(--red);   color: #fff; }
+  .btn-connect { background: var(--accent); color: #080C10; }
+  .btn-close { background: transparent; border: 1px solid var(--red); color: var(--red);
+    font-size: 11px; padding: 5px 10px; }
+
+  /* ── CONNECT PANEL ── */
+  .connect-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px;
+    margin-bottom: 10px;
+  }
+  .connect-panel h3 {
+    font-size: 12px;
+    color: var(--dim);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    font-family: var(--mono);
+  }
+  .input-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  input {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 8px 12px;
+    border-radius: 7px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  input:focus { border-color: var(--accent); }
+  input.token-input { flex: 1; min-width: 200px; }
+  input.capital-input { width: 120px; }
+
+  /* ── POSITIONS ── */
+  .section-title {
+    font-size: 10px;
+    color: var(--dim);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-family: var(--mono);
+    margin-bottom: 8px;
+    padding-left: 2px;
+  }
+
+  .position-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    border-left: 3px solid var(--accent);
+  }
+
+  .pos-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+  }
+
+  .pos-title {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .pos-name {
+    font-family: var(--mono);
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .pos-expiry {
+    font-size: 10px;
+    color: var(--dim);
+    font-family: var(--mono);
+  }
+
+  .pos-pnl {
+    font-family: var(--mono);
+    font-size: 18px;
+    font-weight: 700;
+    text-align: right;
+  }
+
+  .pos-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .pos-metric { display: flex; flex-direction: column; gap: 2px; }
+  .pos-metric-label { font-size: 9px; color: var(--dim); letter-spacing: 1px; text-transform: uppercase; }
+  .pos-metric-val {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .pos-metric-val.sl-val  { color: var(--red); }
+  .pos-metric-val.tgt-val { color: var(--green); }
+
+  .sl-bar {
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    margin-bottom: 10px;
+    overflow: hidden;
+  }
+  .sl-bar-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.5s;
+  }
+
+  /* ── EMPTY STATE ── */
+  .empty-state {
+    text-align: center;
+    padding: 30px;
+    color: var(--dim);
+    font-size: 13px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 10px;
+    font-family: var(--mono);
+  }
+
+  /* ── TRADES ── */
+  .trades-section { margin-bottom: 10px; }
+
+  .trade-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 4px;
+    font-family: var(--mono);
+    font-size: 12px;
+  }
+
+  .trade-name { color: var(--text); font-weight: 600; }
+  .trade-meta { color: var(--dim); font-size: 10px; }
+  .trade-pnl  { font-weight: 700; }
+
+  /* ── LOGS ── */
+  .logs-section { }
+
+  .log-entry {
+    display: flex;
+    gap: 8px;
+    padding: 5px 10px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin-bottom: 3px;
+    font-family: var(--mono);
+    font-size: 11px;
+    align-items: flex-start;
+  }
+
+  .log-time { color: var(--dim); flex-shrink: 0; }
+  .log-msg.INFO   { color: var(--text); }
+  .log-msg.WARN   { color: var(--yellow); }
+  .log-msg.ERROR  { color: var(--red); }
+  .log-msg.SIGNAL { color: var(--accent); font-weight: 600; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 480px) {
+    .pos-grid { grid-template-columns: repeat(2, 1fr); }
+    .nifty-price { font-size: 18px; }
+    .input-row { flex-direction: column; }
+    input.token-input { width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-left">
+    <span class="brand">QuantEdge v2</span>
+    <div class="market-row">
+      <span class="nifty-price" id="niftyPrice">—</span>
+      <span class="vwap-label">VWAP</span>
+      <span class="vwap-val" id="vwapVal">—</span>
+    </div>
+    <div class="pnl-row">
+      <div class="pnl-item">
+        <span class="pnl-label">Capital</span>
+        <span class="pnl-val neu" id="capitalVal">—</span>
+      </div>
+      <div class="pnl-item">
+        <span class="pnl-label">Today P&L</span>
+        <span class="pnl-val neu" id="dailyPnl">₹0</span>
+      </div>
+      <div class="pnl-item">
+        <span class="pnl-label">Trades</span>
+        <span class="pnl-val neu" id="tradeCount">0</span>
+      </div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div>
+      <span class="status-dot" id="statusDot"></span>
+      <span style="font-size:11px;color:var(--dim)" id="statusText">Disconnected</span>
+    </div>
+    <div class="btn-row">
+      <button class="btn-start" id="btnStart" onclick="startTrading()" disabled>START</button>
+      <button class="btn-stop"  id="btnStop"  onclick="stopTrading()"  disabled>STOP</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONNECT PANEL -->
+<div class="connect-panel" id="connectPanel">
+  <h3>Connect to Upstox</h3>
+  <div class="input-row">
+    <input class="token-input" id="tokenInput" type="password"
+      placeholder="Paste Upstox access token here" />
+    <input class="capital-input" id="capitalInput" type="number"
+      placeholder="Capital ₹" value="17000" />
+    <button class="btn-connect" onclick="connect()">CONNECT</button>
+  </div>
+</div>
+
+<!-- POSITIONS -->
+<div id="positionsSection">
+  <p class="section-title">Open Positions</p>
+  <div id="positionsContainer">
+    <div class="empty-state" id="emptyState">No open positions — waiting for signal</div>
+  </div>
+</div>
+
+<!-- TRADES -->
+<div class="trades-section" id="tradesSection" style="display:none">
+  <p class="section-title">Today's Trades</p>
+  <div id="tradesContainer"></div>
+</div>
+
+<!-- LOGS -->
+<div class="logs-section">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+    <p class="section-title" style="margin:0">Activity Log</p>
+    <button onclick="downloadLogs()" style="font-size:10px;padding:4px 10px;background:transparent;border:1px solid var(--border);color:var(--dim);border-radius:6px;cursor:pointer">⬇ Download</button>
+  </div>
+  <div id="logsContainer"></div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════
+let appState = {
+  connected:  false,
+  isRunning:  false,
+  positions:  [],
+  trades:     [],
+  dailyPnl:   0,
+  capital:    0,
+  niftySpot:  0,
+  vwap:       0,
+  logs:       [],
+};
+
+const API = '';  // same origin
+
+// ═══════════════════════════════════════════════
+// CONNECT
+// ═══════════════════════════════════════════════
+async function connect() {
+  const token   = document.getElementById('tokenInput').value.trim();
+  const capital = parseInt(document.getElementById('capitalInput').value) || 17000;
+  if (!token) { alert('Paste your Upstox access token'); return; }
+
+  try {
+    const res = await fetch(API + '/connect', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, capital }),
+    });
+    const data = await res.json();
+    if (data.ok) {
+      appState.connected = true;
+      appState.capital   = data.capital;
+      document.getElementById('connectPanel').style.display = 'none';
+      setStatus('connected', 'Connected');
+      document.getElementById('btnStart').disabled = false;
+      startSSE();
+    } else {
+      alert('Connection failed');
+    }
+  } catch(e) {
+    alert('Server not reachable. Is QuantEdge running?');
+  }
+}
+
+// ═══════════════════════════════════════════════
+// START / STOP
+// ═══════════════════════════════════════════════
+async function startTrading() {
+  await fetch(API + '/start', { method: 'POST' });
+  appState.isRunning = true;
+  setStatus('running', 'Trading...');
+  document.getElementById('btnStart').disabled = true;
+  document.getElementById('btnStop').disabled  = false;
+}
+
+async function stopTrading() {
+  await fetch(API + '/stop', { method: 'POST' });
+  appState.isRunning = false;
+  setStatus('connected', 'Stopped');
+  document.getElementById('btnStart').disabled = false;
+  document.getElementById('btnStop').disabled  = true;
+}
+
+async function closePosition(posId) {
+  if (!confirm('Close this position now?')) return;
+  await fetch(API + '/close/' + posId, { method: 'POST' });
+}
+
+// ═══════════════════════════════════════════════
+// SSE
+// ═══════════════════════════════════════════════
+function startSSE() {
+  const es = new EventSource(API + '/stream');
+  es.onmessage = e => {
+    const msg = JSON.parse(e.data);
+    handleMessage(msg);
+  };
+  es.onerror = () => {
+    setStatus('', 'Reconnecting...');
+    setTimeout(startSSE, 3000);
+    es.close();
+  };
+}
+
+function handleMessage(msg) {
+  if (msg.type === 'STATE_UPDATE') {
+    const s = msg.state;
+    appState.positions = s.positions || [];
+    appState.trades    = s.trades    || [];
+    appState.dailyPnl  = s.dailyPnl  || 0;
+    appState.capital   = s.capital   || appState.capital;
+    appState.niftySpot = s.niftySpot || appState.niftySpot;
+    appState.vwap      = s.vwap      || appState.vwap;
+    appState.isRunning = s.isRunning;
+    appState.logs      = s.logs      || [];
+    renderAll();
+  }
+  if (msg.type === 'POSITION_UPDATE') {
+    appState.positions = msg.positions || [];
+    renderPositions();
+    updateHeader();
+  }
+  if (msg.type === 'MARKET') {
+    appState.niftySpot = msg.spot;
+    appState.vwap      = msg.vwap;
+    updateHeader();
+  }
+  if (msg.type === 'LOG') {
+    appState.logs.unshift(msg.entry);
+    if (appState.logs.length > 50) appState.logs.pop();
+    renderLogs();
+  }
+}
+
+// ═══════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════
+function renderAll() {
+  updateHeader();
+  renderPositions();
+  renderTrades();
+  renderLogs();
+}
+
+function fmt(n) {
+  return (n >= 0 ? '+' : '') + '₹' + Math.abs(Math.round(n)).toLocaleString('en-IN');
+}
+
+function updateHeader() {
+  const spot = appState.niftySpot;
+  const vwap = appState.vwap;
+  const pnl  = appState.dailyPnl;
+
+  document.getElementById('niftyPrice').textContent = spot ? '₹' + spot.toLocaleString('en-IN') : '—';
+  document.getElementById('vwapVal').textContent    = vwap ? '₹' + Math.round(vwap).toLocaleString('en-IN') : '—';
+  document.getElementById('capitalVal').textContent = '₹' + Math.round(appState.capital).toLocaleString('en-IN');
+  document.getElementById('tradeCount').textContent = appState.trades.length;
+
+  const pnlEl = document.getElementById('dailyPnl');
+  pnlEl.textContent = fmt(pnl);
+  pnlEl.className   = 'pnl-val ' + (pnl > 0 ? 'pos' : pnl < 0 ? 'neg' : 'neu');
+
+  // NIFTY vs VWAP indicator
+  if (spot && vwap) {
+    const niftyEl = document.getElementById('niftyPrice');
+    niftyEl.style.color = spot > vwap ? 'var(--green)' : spot < vwap ? 'var(--red)' : 'var(--text)';
+  }
+}
+
+function renderPositions() {
+  const container = document.getElementById('positionsContainer');
+  const empty     = document.getElementById('emptyState');
+
+  if (appState.positions.length === 0) {
+    container.innerHTML = '';
+    if (empty) empty.style.display = 'block';
+    else container.innerHTML = '<div class="empty-state" id="emptyState">No open positions — waiting for signal</div>';
+    return;
+  }
+  if (empty) empty.style.display = 'none';
+
+  container.innerHTML = appState.positions.map(pos => {
+    const ltp       = pos.currentPrice || pos.entryPrice;
+    const pnl       = pos.unrealPnl || 0;
+    const pnlClass  = pnl > 0 ? 'pos' : pnl < 0 ? 'neg' : 'neu';
+    const pnlTxt    = pnl === 0 ? '---' : fmt(pnl);
+    const gain      = ltp > 0 ? ((ltp - pos.entryPrice) / pos.entryPrice * 100).toFixed(1) : '0';
+    const dirColor  = pos.direction === 'CE' ? 'var(--green)' : 'var(--red)';
+
+    // SL proximity bar (0% = at SL, 100% = far from SL)
+    const range     = pos.entryPrice - pos.sl;
+    const dist      = ltp - pos.sl;
+    const slPct     = range > 0 ? Math.max(0, Math.min(100, dist / range * 100)) : 100;
+    const barColor  = slPct < 20 ? 'var(--red)' : slPct < 50 ? 'var(--yellow)' : 'var(--green)';
+
+    const expiryFmt = pos.expiry ? pos.expiry.split('-').slice(1).join('/') : '';
+
+    return '<div class="position-card">' +
+      '<div class="pos-header">' +
+        '<div class="pos-title">' +
+          '<span class="pos-name">NIFTY <span style="color:' + dirColor + '">' +
+            pos.strike + ' ' + pos.direction + '</span></span>' +
+          '<span class="pos-expiry">NFO ' + expiryFmt + ' · Intraday' +
+            (pos.trailLocked ? ' · 🔒 SL locked' : '') + '</span>' +
+        '</div>' +
+        '<div>' +
+          '<div class="pos-pnl ' + pnlClass + '">' + pnlTxt + '</div>' +
+          '<div style="font-size:10px;color:var(--dim);text-align:right;font-family:var(--mono)">' + gain + '%</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="pos-grid">' +
+        '<div class="pos-metric"><span class="pos-metric-label">Entry</span>' +
+          '<span class="pos-metric-val">₹' + pos.entryPrice.toFixed(2) + '</span></div>' +
+        '<div class="pos-metric"><span class="pos-metric-label">Live</span>' +
+          '<span class="pos-metric-val">' + (ltp ? '₹' + ltp.toFixed(2) : '---') + '</span></div>' +
+        '<div class="pos-metric"><span class="pos-metric-label">SL</span>' +
+          '<span class="pos-metric-val sl-val">₹' + pos.sl + '</span></div>' +
+        '<div class="pos-metric"><span class="pos-metric-label">Target</span>' +
+          '<span class="pos-metric-val tgt-val">₹' + pos.target + '</span></div>' +
+      '</div>' +
+      '<div class="sl-bar"><div class="sl-bar-fill" style="width:' + slPct + '%;background:' + barColor + '"></div></div>' +
+      '<button class="btn-close" onclick="closePosition(\'' + pos.id + '\')">CLOSE MANUALLY</button>' +
+    '</div>';
+  }).join('');
+}
+
+function renderTrades() {
+  const section   = document.getElementById('tradesSection');
+  const container = document.getElementById('tradesContainer');
+
+  if (appState.trades.length === 0) {
+    section.style.display = 'none';
+    return;
+  }
+  section.style.display = 'block';
+
+  container.innerHTML = appState.trades.slice().reverse().map(t => {
+    const pnlColor = t.pnl >= 0 ? 'var(--green)' : 'var(--red)';
+    const time     = t.time ? new Date(t.time).toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' }) : '';
+    return '<div class="trade-row">' +
+      '<div>' +
+        '<div class="trade-name">NIFTY ' + t.strike + ' ' + t.direction + '</div>' +
+        '<div class="trade-meta">₹' + t.entryPrice.toFixed(2) + ' → ₹' + t.exitPrice.toFixed(2) +
+          ' · ' + t.reason + ' · ' + time + '</div>' +
+      '</div>' +
+      '<span class="trade-pnl" style="color:' + pnlColor + ';font-family:var(--mono)">' +
+        fmt(t.pnl) + '</span>' +
+    '</div>';
+  }).join('');
+}
+
+function renderLogs() {
+  const container = document.getElementById('logsContainer');
+  container.innerHTML = appState.logs.slice(0, 25).map(entry => {
+    return '<div class="log-entry">' +
+      '<span class="log-time">' + entry.time + '</span>' +
+      '<span class="log-msg ' + entry.level + '">' + entry.msg + '</span>' +
+    '</div>';
+  }).join('');
+}
+
+function setStatus(type, text) {
+  const dot  = document.getElementById('statusDot');
+  const txt  = document.getElementById('statusText');
+  dot.className  = 'status-dot ' + type;
+  txt.textContent = text;
+}
+
+function downloadLogs() {
+  const lines = appState.logs.map(e => e.time + " [" + e.level + "] " + e.msg).join("\n");
+  const blob = new Blob([lines], { type: "text/plain" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "qe2-logs-" + new Date().toISOString().slice(0,10) + ".txt";
+  a.click();
+}
+
+// Load state on init
+fetch(API + '/state')
+  .then(r => r.json())
+  .then(s => {
+    if (s.isRunning || s.positions?.length > 0) {
+      appState = { ...appState, ...s };
+      appState.connected = true;
+      document.getElementById('connectPanel').style.display = 'none';
+      setStatus(s.isRunning ? 'running' : 'connected', s.isRunning ? 'Trading...' : 'Connected');
+      document.getElementById('btnStart').disabled = s.isRunning;
+      document.getElementById('btnStop').disabled  = !s.isRunning;
+      startSSE();
+      renderAll();
+    }
+  })
+  .catch(() => {});
+</script>
+</body>
+</html>
