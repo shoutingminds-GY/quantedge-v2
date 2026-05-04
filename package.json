@@ -1,0 +1,11 @@
+{
+  "name": "quantedge-v2",
+  "version": "2.0.0",
+  "description": "QuantEdge AI v2 — Server-based NIFTY options trading system",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "pm2": "pm2 start index.js --name qe2"
+  },
+  "dependencies": {}
+}
